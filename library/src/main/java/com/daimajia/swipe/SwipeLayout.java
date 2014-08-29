@@ -1,6 +1,7 @@
 package com.daimajia.swipe;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Rect;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.ViewDragHelper;
@@ -27,8 +28,8 @@ public class SwipeLayout extends FrameLayout {
     private ViewDragHelper mDragHelper;
 
     private int mDragDistance = 0;
-    private DragEdge mDragEdge = DragEdge.Right;
-    private ShowMode mShowMode = ShowMode.PullOut;
+    private DragEdge mDragEdge;
+    private ShowMode mShowMode;
 
     private List<SwipeListener> mSwipeListeners = new ArrayList<SwipeListener>();
     private List<SwipeDenier> mSwipeDeniers = new ArrayList<SwipeDenier>();
@@ -58,6 +59,12 @@ public class SwipeLayout extends FrameLayout {
     public SwipeLayout(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         mDragHelper = ViewDragHelper.create(this, mDragHelperCallback);
+
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.SwipeLayout);
+        int ordinal = a.getInt(R.styleable.SwipeLayout_drag_edge, DragEdge.Right.ordinal());
+        mDragEdge = DragEdge.values()[ordinal];
+        ordinal = a.getInt(R.styleable.SwipeLayout_show_mode, ShowMode.PullOut.ordinal());
+        mShowMode = ShowMode.values()[ordinal];
     }
 
 
@@ -546,6 +553,10 @@ public class SwipeLayout extends FrameLayout {
         }
     }
 
+    /**
+     * {@link android.view.View.OnLayoutChangeListener} added in API 11.
+     * I need to support it from API 8.
+     */
     public interface OnLayout{
         public void onLayout(SwipeLayout v);
     }
@@ -607,7 +618,7 @@ public class SwipeLayout extends FrameLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        
+
         if(mDragEdge == DragEdge.Left || mDragEdge == DragEdge.Right)
             mDragDistance = getBottomView().getMeasuredWidth();
         else
