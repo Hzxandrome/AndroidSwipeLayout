@@ -20,6 +20,10 @@ import java.util.Map;
 
 public class SwipeLayout extends FrameLayout {
 
+    public static interface SwipeDenier {
+        public boolean shouldDenySwipe(MotionEvent ev);
+    }
+
     private ViewDragHelper mDragHelper;
 
     private int mDragDistance = 0;
@@ -27,6 +31,7 @@ public class SwipeLayout extends FrameLayout {
     private ShowMode mShowMode = ShowMode.PullOut;
 
     private List<SwipeListener> mSwipeListeners = new ArrayList<SwipeListener>();
+    private List<SwipeDenier> mSwipeDeniers = new ArrayList<SwipeDenier>();
     private Map<View, ArrayList<OnRevealListener>> mRevealListeners = new HashMap<View, ArrayList<OnRevealListener>>();
     private Map<View, Boolean> mShowEntirely = new HashMap<View, Boolean>();
 
@@ -73,6 +78,18 @@ public class SwipeLayout extends FrameLayout {
 
     public void removeAllSwipeListener(){
         mSwipeListeners.clear();
+    }
+
+    public void addSwipeDenier(SwipeDenier denier) {
+        mSwipeDeniers.add(denier);
+    }
+
+    public void removeSwipeDenier(SwipeDenier denier) {
+        mSwipeDeniers.remove(denier);
+    }
+
+    public void removeAllSwipeDeniers() {
+        mSwipeDeniers.clear();
     }
 
     public interface OnRevealListener {
@@ -604,6 +621,12 @@ public class SwipeLayout extends FrameLayout {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
+        for (SwipeDenier denier : mSwipeDeniers) {
+            if (denier != null && denier.shouldDenySwipe(ev)) {
+                return false;
+            }
+        }
+
         return mDragHelper.shouldInterceptTouchEvent(ev);
     }
 
